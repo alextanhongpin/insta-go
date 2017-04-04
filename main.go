@@ -18,6 +18,7 @@ func main() {
 	// Load the config
 	conf := common.GetConfig()
 	router := httprouter.New()
+	common.InitDatabase()
 
 	photosvc.Init(router)
 	router.GET("/", Index)

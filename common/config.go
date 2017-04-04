@@ -22,9 +22,7 @@ func GetConfig() Configuration {
 		return configuration
 	}
 	file, _ := os.Open(configPath)
-	decoder := json.NewDecoder(file)
-
-	err := decoder.Decode(&configuration)
+	err := json.NewDecoder(file).Decode(&configuration)
 
 	if err != nil {
 		fmt.Printf("Error:%s", err)
