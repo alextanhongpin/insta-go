@@ -1,7 +1,16 @@
 # insta-go
 Mock API Instagram with Golang
 
+- [ ] Config best practices
+- [ ] Connect to database
+- [ ] Designing models
+- [ ] Chaining middlewares
+- [ ] Deploy using docker
+- [ ] JWT authentication
+- [ ] Testing each layers individually
 
+
+```
 $ psql
 
 // Create a new database with the name instadb;
@@ -45,3 +54,4 @@ INSERT INTO photo_tbl
 
 // Query the sql
 SELECT * FROM photo_tbl;
+```
