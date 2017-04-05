@@ -9,6 +9,9 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
 	"go.uber.org/zap"
+
+	"github.com/alextanhongpin/instago/common"
+	"github.com/alextanhongpin/instago/middleware"
 )
 
 func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -40,7 +43,7 @@ func MiddlewareTwo(next http.Handler) http.Handler {
 func Final(w http.ResponseWriter, r *http.Request) {
 
 	queryValues := r.URL.Query()
-	ctx := context.WithValue(r.Context(), "params", queryValues)
+	ctx := context.WithValue(r.Context(), "query", queryValues)
 	r = r.WithContext(ctx)
 
 	v := r.Context().Value("params").(url.Values)
@@ -48,19 +51,14 @@ func Final(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello world Emd pf middleware")
 }
 
-// func Wrap() httprouter.Handle {
-// 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-// 		alice.New(MiddlewareOne, MiddlewareTwo).Then(Final)
-// 	}
-// }
+func Init(router *httprouter.Router) *httprouter.Router {
+	endpoint := Endpoint{}
+	service := &Service{common.InitDatabase()}
 
-func Something(params string) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	// Example chaining middlewares with Alice
+	router.Handler("GET", "/photos", alice.New(MiddlewareOne, MiddlewareTwo).ThenFunc(endpoint.All(service)))
 
-	}
-}
-
-func Init(router *httprouter.Router) {
-	router.Handler("GET", "/photos/something", alice.New(MiddlewareOne, MiddlewareTwo).ThenFunc(Final))
-	router.GET("/photos", Index)
+	// Example middleware with httprouter
+	router.GET("/photos/:id", middleware.Logger(endpoint.One(service)))
+	return router
 }

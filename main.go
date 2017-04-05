@@ -18,9 +18,11 @@ func main() {
 	// Load the config
 	conf := common.GetConfig()
 	router := httprouter.New()
-	common.InitDatabase()
 
-	photosvc.Init(router)
+	// common.InitDatabase()
+
+	// Just return the router to make the syntax nicer
+	router = photosvc.Init(router)
 	router.GET("/", Index)
 
 	fmt.Printf("Listening to port *%s", conf.Port)
