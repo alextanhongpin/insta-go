@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/alextanhongpin/instago/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
 	"github.com/alextanhongpin/instago/common"
 	"github.com/alextanhongpin/instago/photosvc"
-	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 )

@@ -1,0 +1,67 @@
+{
+	"ImportPath": "github.com/alextanhongpin/instago",
+	"GoVersion": "go1.8",
+	"GodepVersion": "v75",
+	"Deps": [
+		{
+			"ImportPath": "github.com/julienschmidt/httprouter",
+			"Comment": "v1.1-38-g4563b0b",
+			"Rev": "4563b0ba73e4db6c6423b60a26f3cadd2e9a1ec9"
+		},
+		{
+			"ImportPath": "github.com/justinas/alice",
+			"Comment": "1.0.0-16-g1051eaf",
+			"Rev": "1051eaf52fcafdd87ead59d28b065f1fcb8274ec"
+		},
+		{
+			"ImportPath": "github.com/lib/pq",
+			"Comment": "go1.0-cutoff-166-g2704adc",
+			"Rev": "2704adc878c21e1329f46f6e56a1c387d788ff94"
+		},
+		{
+			"ImportPath": "github.com/lib/pq/oid",
+			"Comment": "go1.0-cutoff-166-g2704adc",
+			"Rev": "2704adc878c21e1329f46f6e56a1c387d788ff94"
+		},
+		{
+			"ImportPath": "go.uber.org/atomic",
+			"Comment": "v1.1.0",
+			"Rev": "3b8db5e93c4c02efbc313e17b2e796b0914a01fb"
+		},
+		{
+			"ImportPath": "go.uber.org/zap",
+			"Comment": "v1.1.0",
+			"Rev": "a2773be06b9ac7c318a3a105b5c310af5730c6b4"
+		},
+		{
+			"ImportPath": "go.uber.org/zap/buffer",
+			"Comment": "v1.1.0",
+			"Rev": "a2773be06b9ac7c318a3a105b5c310af5730c6b4"
+		},
+		{
+			"ImportPath": "go.uber.org/zap/internal/bufferpool",
+			"Comment": "v1.1.0",
+			"Rev": "a2773be06b9ac7c318a3a105b5c310af5730c6b4"
+		},
+		{
+			"ImportPath": "go.uber.org/zap/internal/color",
+			"Comment": "v1.1.0",
+			"Rev": "a2773be06b9ac7c318a3a105b5c310af5730c6b4"
+		},
+		{
+			"ImportPath": "go.uber.org/zap/internal/exit",
+			"Comment": "v1.1.0",
+			"Rev": "a2773be06b9ac7c318a3a105b5c310af5730c6b4"
+		},
+		{
+			"ImportPath": "go.uber.org/zap/internal/multierror",
+			"Comment": "v1.1.0",
+			"Rev": "a2773be06b9ac7c318a3a105b5c310af5730c6b4"
+		},
+		{
+			"ImportPath": "go.uber.org/zap/zapcore",
+			"Comment": "v1.1.0",
+			"Rev": "a2773be06b9ac7c318a3a105b5c310af5730c6b4"
+		}
+	]
+}
