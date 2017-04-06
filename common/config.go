@@ -14,6 +14,20 @@ const configPath string = "conf.json"
 
 var configuration Configuration
 
+func init() {
+	configuration = LoadConfig()
+}
+
+func LoadConfig() Configuration {
+	file, _ := os.Open(configPath)
+	err := json.NewDecoder(file).Decode(&configuration)
+
+	if err != nil {
+		fmt.Printf("Error:%s", err)
+	}
+	return configuration
+}
+
 // GetConfig reads the config from a json file
 // and returns the config
 func GetConfig() Configuration {
@@ -21,11 +35,6 @@ func GetConfig() Configuration {
 	if (Configuration{} != configuration) {
 		return configuration
 	}
-	file, _ := os.Open(configPath)
-	err := json.NewDecoder(file).Decode(&configuration)
-
-	if err != nil {
-		fmt.Printf("Error:%s", err)
-	}
+	configuration = LoadConfig()
 	return configuration
 }

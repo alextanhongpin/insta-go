@@ -41,7 +41,6 @@ func MiddlewareTwo(next http.Handler) http.Handler {
 }
 
 func Final(w http.ResponseWriter, r *http.Request) {
-
 	queryValues := r.URL.Query()
 	ctx := context.WithValue(r.Context(), "query", queryValues)
 	r = r.WithContext(ctx)
@@ -53,12 +52,13 @@ func Final(w http.ResponseWriter, r *http.Request) {
 
 func Init(router *httprouter.Router) *httprouter.Router {
 	endpoint := Endpoint{}
-	service := &Service{common.InitDatabase()}
+	service := &Service{common.GetDatabaseContext()}
 
 	// Example chaining middlewares with Alice
 	router.Handler("GET", "/photos", alice.New(MiddlewareOne, MiddlewareTwo).ThenFunc(endpoint.All(service)))
 
 	// Example middleware with httprouter
 	router.GET("/photos/:id", middleware.Logger(endpoint.One(service)))
+	router.POST("/photos", endpoint.Create(service))
 	return router
 }

@@ -25,4 +25,10 @@ type (
 	oneResponse struct {
 		Data Photo `json:"data"`
 	}
+	// createRequest struct {
+	// 	File
+	// }
+	createResponse struct {
+		Status string `json:"status"`
+	}
 )

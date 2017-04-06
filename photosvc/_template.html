@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+
+	    <input type="file" name="uploadfile" id="uploader"/>
+	    <input type="submit" value="upload" id="submit"/>
+
+
+	<script type="text/javascript">
+		// Sample example on how to upload the photo
+		console.log('loaded')
+		// Yeah, poorly set global
+		let fileToUpload = null
+
+		const uploader = document.getElementById('uploader')
+		const submit = document.getElementById('submit')
+
+		uploader.addEventListener('change', handleFileChange, false)
+
+		function handleFileChange (evt) {
+			const files = evt.currentTarget.files
+			const file = files[0]
+			const reader = new FileReader()
+
+			reader.onload = function (e) {
+				fileToUpload = e.currentTarget.result
+			}
+			reader.readAsText(file)
+		}
+
+		const URL = 'http://localhost:8080/photos'
+		submit.addEventListener('click', (evt) => {
+			evt.preventDefault()
+			const formData = new FormData()
+			formData.append('file', uploader.files[0])
+			console.log(uploader.files[0])
+			fetch(URL, {
+				method: 'POST',
+				// headers: {
+				// 	"Content-Type": "multipart/form-data"
+				// },
+				body: formData,
+				mode: "cors"
+			}).then((body) => {
+				console.log(body)
+			}).then((data) => {
+				console.log(data)
+			}).catch((error) => {
+				console.log(error)
+			})
+			return false
+		}, false)
+
+
+	</script>
+</body>
+</html>

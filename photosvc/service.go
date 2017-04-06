@@ -62,13 +62,5 @@ func (s Service) One(request interface{}) (Photo, error) {
 	if caption.Valid {
 		photo.Caption = caption.String
 	}
-
-	// switch {
-	// case err == sql.ErrNoRows:
-	// 	return photo, err
-	// case err != nil:
-	// 	log.Fatal(err)
-	// }
-
 	return photo, nil
 }
