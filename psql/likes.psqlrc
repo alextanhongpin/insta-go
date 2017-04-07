@@ -1,0 +1,6 @@
+CREATE TABLE likes (
+	user_id REFERENCES user,
+	photo_id REFERENCES photos,
+	date_created date
+	date_updated date
+)

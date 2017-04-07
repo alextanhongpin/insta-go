@@ -1,0 +1,2 @@
+photo_id
+comment_id

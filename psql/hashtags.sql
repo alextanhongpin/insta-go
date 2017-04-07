@@ -1,0 +1,2 @@
+photo_id
+hashtag_id
