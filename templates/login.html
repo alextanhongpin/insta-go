@@ -1,0 +1,33 @@
+{{define "head"}}
+  <title>Login</title>
+{{end}}
+{{define "body"}}
+  <h1>Login</h1>
+
+  <!--The e-mail input group-->
+
+  <form method="POST" action="/login">
+    <div>
+      <div>
+        <label>E-mail</label>
+      </div>
+      <div>
+        <input type="email" name="email"/>
+      </div>
+    </div>
+
+
+    <!--The password input group-->
+    <div>
+      <div>
+        <label>Password</label>
+      </div>
+      <div>
+        <input type="password" name="password"/>
+      </div>
+    </div>
+
+    <button>Submit</button>
+  </form>
+
+{{end}}

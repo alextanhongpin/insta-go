@@ -13,11 +13,13 @@ Mock API Instagram with Golang
 ```
 $ psql
 
+// List down all database
+$ \l 
 // Create a new database with the name instadb;
 CREATE DATABASE instadb;
 
 // Connect to the database
-\c instadb;
+$ \c instadb;
 
 // Create a new table
 CREATE TABLE photo_tbl (

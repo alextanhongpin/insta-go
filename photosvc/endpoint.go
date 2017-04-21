@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/alextanhongpin/instago/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
 	"github.com/alextanhongpin/instago/helper"
-	"github.com/julienschmidt/httprouter"
 )
 
 type Endpoint struct{}
@@ -16,7 +16,7 @@ type Endpoint struct{}
 func (e Endpoint) All(svc *Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		req := allRequest{
-			Query: "",
+			UserID: "",
 		}
 		v, err := svc.All(req)
 		if err != nil {

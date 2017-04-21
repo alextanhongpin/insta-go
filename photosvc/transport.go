@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/alextanhongpin/instago/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
 	"go.uber.org/zap"
 
@@ -60,5 +60,6 @@ func Init(router *httprouter.Router) *httprouter.Router {
 	// Example middleware with httprouter
 	router.GET("/photos/:id", middleware.Logger(endpoint.One(service)))
 	router.POST("/photos", endpoint.Create(service))
+
 	return router
 }

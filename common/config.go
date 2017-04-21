@@ -6,8 +6,11 @@ import (
 	"os"
 )
 
+// Configuration is the model for the config
+// loaded from config file
 type Configuration struct {
-	Port string `json:"port"`
+	Port      string `json:"port"`
+	JWTSecret string `json:"jwt_secret"`
 }
 
 const configPath string = "conf.json"
@@ -18,6 +21,8 @@ func init() {
 	configuration = LoadConfig()
 }
 
+// LoadConfig returns the configuration that is loaded
+// from conf.json
 func LoadConfig() Configuration {
 	file, _ := os.Open(configPath)
 	err := json.NewDecoder(file).Decode(&configuration)

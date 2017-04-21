@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/alextanhongpin/instago/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
 )
 
