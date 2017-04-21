@@ -21,6 +21,10 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
+type LoginResponse struct {
+	AccessToken string `json:"access_token"`
+}
+
 // RegisterRequest is the request required when the user register a new account
 type RegisterRequest struct {
 }

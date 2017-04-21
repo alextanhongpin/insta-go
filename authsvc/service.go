@@ -1,6 +1,7 @@
 package authsvc
 
 import (
+	"errors"
 	"fmt"
 
 	"database/sql"
@@ -13,17 +14,36 @@ type Service struct {
 	*sql.DB
 }
 
+var (
+	errorInvalidUser = errors.New("Err not found")
+)
+
 // Login checks if the user have access to login
-func (s Service) Login(request interface{}) (User, error) {
+func (s Service) Login(request interface{}) (LoginResponse, error) {
 	// Handle the users's login
-	var user User
+	var res LoginResponse
+	req := request.(LoginRequest)
+	if !(req.Email == "john.doe@mail.com" && req.Password == "123456") {
+		// Found the correct user
+		// Create access token and return it
+		return res, errorInvalidUser
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": "userprofileid123",
+	})
+	// Sign and get the complete encoded token as a string
+	//  using the secret
+	accessToken, err := token.SignedString([]byte("secret"))
+	if err != nil {
+		return res, err
+	}
+	res.AccessToken = accessToken
 	// Check if user's exist in the database
 	// Check is the email is unique
 	// Hash the password
 	// Create a jwt token
 	// Returns the user's token
-
-	return user, nil
+	return res, nil
 }
 
 // Register checks if the user can register a new account

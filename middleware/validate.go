@@ -9,7 +9,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-func validate(h httprouter.Handle) httprouter.Handle {
+func Validate(h httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 		// If no Auth cookie is set then return a 404 not found
@@ -35,14 +35,16 @@ func validate(h httprouter.Handle) httprouter.Handle {
 			return
 		}
 
-		type claimsContextKey string
+		// type claimsContextKey string
 
 		// Grab the token claims and pass it into the original request
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-			fmt.Println(claims["user_id"])
-			key := claimsContextKey("user_id")
-			ctx := context.WithValue(r.Context(), key, claims["user_id"])
-			h(w, r.WithContext(ctx), ps)
+			// fmt.Println("\nuser_id", claims["user_id"], claims["user_id"].(string))
+			// key := claimsContextKey("user_id")
+			ctx := context.WithValue(r.Context(), "user_id", claims["user_id"])
+			fmt.Println("Before calling the next route")
+			r := r.WithContext(ctx)
+			h(w, r, ps)
 		} else {
 			fmt.Println(err)
 			http.NotFound(w, r)
