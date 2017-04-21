@@ -4,25 +4,28 @@
 {{define "body"}}
   <h1>Register</h1>
 
-  <!--The e-mail input group-->
-  <div>
+
+  <form method="POST" action="/login">
+    <!--The e-mail input group-->
     <div>
-      <label>E-mail</label>
+      <div>
+        <label>E-mail</label>
+      </div>
+      <div>
+        <input type="email" name="email"/>
+      </div>
     </div>
-    <div>
-      <input type="email" name="email"/>
-    </div>
-  </div>
 
 
-  <!--The password input group-->
-  <div>
+    <!--The password input group-->
     <div>
-      <label>Password</label>
+      <div>
+        <label>Password</label>
+      </div>
+      <div>
+        <input type="password" name="password"/>
+      </div>
     </div>
-    <div>
-      <input type="password" name="password"/>
-    </div>
-  </div>
+  </form>
 
 {{end}}

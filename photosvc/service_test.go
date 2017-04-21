@@ -6,7 +6,8 @@ import (
 
 type MockService struct{}
 
-func (s MockService) All() ([]Photo, error) {
+func (s MockService) All(request interface{}) ([]Photo, error) {
+
 	var photos []Photo
 	return photos, nil
 }
