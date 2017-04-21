@@ -50,6 +50,7 @@ func (s Service) One(request interface{}) (Photo, error) {
 	var photo Photo
 	var src sql.NullString
 	var caption sql.NullString
+
 	err := s.QueryRow("SELECT * FROM photo WHERE src = $1", req.ID).Scan(&src, &caption)
 
 	fmt.Println("error", err)

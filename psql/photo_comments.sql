@@ -1,2 +1,4 @@
-photo_id
-comment_id
+CREATE TABLE photo_comments {
+	photo_id text REFERENCES photos
+	comment_id text REFERENCES comments
+}

@@ -1,5 +1,9 @@
 package photosvc
 
+import (
+	"time"
+)
+
 type (
 	// Photo struct {
 	// 	ID        bson.ObjectId `bson:"_id,omitempty" json:"id"`
@@ -26,7 +30,12 @@ type (
 		Data Photo `json:"data"`
 	}
 	createRequest struct {
-		FileName string
+		PhotoID     string    `db="photo_id" json="photo_id"`
+		Src         string    `db="src" json="src"`
+		Caption     string    `db="caption" json="caption"`
+		UserID      string    `db="user_id json="user_id"`
+		DateCreated time.Time `db="date_created" json="date_created"`
+		DateUpdated time.Time `db="date_updated" json="date_updated"`
 	}
 	createResponse struct {
 		Status string `json:"status"`

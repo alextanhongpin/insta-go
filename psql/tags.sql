@@ -1,2 +1,4 @@
-id
-name
+CREATE TABLE (
+	id SERIAL PRIMARY KEY
+	name text
+)
