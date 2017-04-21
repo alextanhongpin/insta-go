@@ -6,6 +6,7 @@ import (
 
 	"database/sql"
 	"github.com/dgrijalva/jwt-go"
+	// Blank import
 	_ "github.com/lib/pq"
 )
 
@@ -49,7 +50,6 @@ func (s Service) Login(request interface{}) (LoginResponse, error) {
 // Register checks if the user can register a new account
 func (s Service) Register(request interface{}) (User, error) {
 	var user User
-
 	// Expires the token and cookie in 1 hour
 	// expireToken := time.Now().Add(time.Hour * 1).Unix()
 

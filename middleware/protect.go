@@ -9,7 +9,9 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-func Validate(h httprouter.Handle) httprouter.Handle {
+// Protect is a middleware that checks if the user is
+// authorized to access an endpoint
+func Protect(h httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 		// If no Auth cookie is set then return a 404 not found

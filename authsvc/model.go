@@ -31,3 +31,7 @@ type RegisterRequest struct {
 
 // RegisterResponse is the response returned when the user successfully/failed to register
 type RegisterResponse struct{}
+
+type MockResponse struct {
+	Message string `json:"message"`
+}

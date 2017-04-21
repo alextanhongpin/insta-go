@@ -1,6 +1,7 @@
 package authsvc
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -15,9 +16,9 @@ type Endpoint struct{}
 // Login endpoint handles the user login
 func (e Endpoint) Login(svc *Service) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		fmt.Println("at /Login")
 		r.ParseForm()
-		fmt.Println(r.Form["email"], r.Form["password"])
+
+		// Parse the request for login
 		req := LoginRequest{
 			Email:    r.Form["email"][0],
 			Password: r.Form["password"][0],
@@ -37,6 +38,7 @@ func (e Endpoint) Login(svc *Service) httprouter.Handle {
 		// }
 		// claims.UserID
 		expireCookie := time.Now().Add(time.Hour * 1)
+
 		// Place the token in the client's cookie
 		fmt.Println("AccessToken", v.AccessToken)
 		cookie := http.Cookie{
@@ -46,14 +48,15 @@ func (e Endpoint) Login(svc *Service) httprouter.Handle {
 			HttpOnly: true,
 		}
 
-		fmt.Println("Auth:cookie", v)
 		http.SetCookie(w, &cookie)
 		http.Redirect(w, r, "/me", http.StatusFound)
 	}
 }
 
 func (e Endpoint) Register(svc *Service) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {}
+	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+
+	}
 }
 
 // Profile returns the
@@ -101,5 +104,19 @@ func (e Endpoint) Logout(svc *Service) httprouter.Handle {
 		}
 		http.SetCookie(w, &deleteCookie)
 		return
+	}
+}
+func (e Endpoint) Mock(svc *Service) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		fmt.Println("at /mock")
+		res := MockResponse{
+			Message: "Hello world",
+		}
+		j, err := json.Marshal(res)
+		if err != nil {
+			helper.ErrorWithJSON(w, err.Error(), 400)
+			return
+		}
+		helper.ResponseWithJSON(w, j, 200)
 	}
 }

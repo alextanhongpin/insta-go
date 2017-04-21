@@ -5,6 +5,17 @@
   {{ template "head" . }}
 </head>
 <body>
+  <header>
+
+    {{ if .UserID }}
+      <form method="POST" action="/logout">
+        <button>Logout</button>
+      </form>
+    {{else}}
+      <a href="/login">Login</a>
+      <a href="/register">Register</a>
+    {{end}}
+  </header>
   {{ template "body" . }}
 </body>
 </html>
