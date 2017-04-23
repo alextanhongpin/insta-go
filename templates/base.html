@@ -7,7 +7,7 @@
 <body>
   <header>
 
-    {{ if .UserID }}
+    {{ if hasField . "UserID" }}
       <form method="POST" action="/logout">
         <button>Logout</button>
       </form>

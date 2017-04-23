@@ -19,34 +19,6 @@ var (
 	errorInvalidUser = errors.New("Err not found")
 )
 
-// Login checks if the user have access to login
-func (s Service) Login(request interface{}) (LoginResponse, error) {
-	// Handle the users's login
-	var res LoginResponse
-	req := request.(LoginRequest)
-	if !(req.Email == "john.doe@mail.com" && req.Password == "123456") {
-		// Found the correct user
-		// Create access token and return it
-		return res, errorInvalidUser
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": "userprofileid123",
-	})
-	// Sign and get the complete encoded token as a string
-	//  using the secret
-	accessToken, err := token.SignedString([]byte("secret"))
-	if err != nil {
-		return res, err
-	}
-	res.AccessToken = accessToken
-	// Check if user's exist in the database
-	// Check is the email is unique
-	// Hash the password
-	// Create a jwt token
-	// Returns the user's token
-	return res, nil
-}
-
 // Register checks if the user can register a new account
 func (s Service) Register(request interface{}) (User, error) {
 	var user User
@@ -74,3 +46,146 @@ func (s Service) Profile(request interface{}) (User, error) {
 	// If the user does not exists, throw error
 	return user, nil
 }
+
+func (s Service) GetUsers(request interface{}) ([]User, error) {
+	var res []User
+	rows, err := s.Query("SELECT username, email FROM users")
+	defer rows.Close()
+
+	for rows.Next() {
+		// Handle null strings
+		var username sql.NullString
+		var email sql.NullString
+
+		err = rows.Scan(&username, &email)
+		if err != nil {
+			return nil, err
+		}
+		u := User{}
+		if username.Valid {
+			u.Username = username.String
+		}
+		if email.Valid {
+			u.Email = email.String
+		}
+		res = append(res, u)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (s Service) GetUserByEmail(request interface{}) (User, error) {
+	fmt.Println("At service/GetUser")
+	req := request.(GetUserRequest)
+	var res User
+
+	var email sql.NullString
+	var password sql.NullString
+	var userID sql.NullString
+
+	err := s.QueryRow("SELECT email, salted_password, user_id FROM users where email = $1", req.Email).Scan(&email, &password, &userID)
+
+	// switch err {
+	// case sql.ErrNoRows:
+	// 	return res, nil
+	// case nil:
+	// 	return res, err
+	// }
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// No results found
+			return res, nil
+		} else {
+			return res, err
+		}
+	}
+	if email.Valid {
+		res.Email = email.String
+	}
+	if password.Valid {
+		res.Password = password.String
+	}
+	if userID.Valid {
+		res.ID = userID.String
+	}
+	return res, err
+}
+
+func (s Service) GetUserByID(request interface{}) (User, error) {
+	fmt.Println("At service/GetUser")
+	req := request.(GetUserRequest)
+	var res User
+
+	var email sql.NullString
+	var password sql.NullString
+	var userID sql.NullString
+	var username sql.NullString
+	var firstName sql.NullString
+	var lastName sql.NullString
+
+	err := s.QueryRow("SELECT email, salted_password, user_id, username, first_name, last_name FROM users where user_id = $1", req.ID).Scan(&email, &password, &userID, &username, &firstName, &lastName)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// No results found
+			return res, nil
+		} else {
+			return res, err
+		}
+	}
+	if email.Valid {
+		res.Email = email.String
+	}
+	if password.Valid {
+		res.Password = password.String
+	}
+	if userID.Valid {
+		res.ID = userID.String
+	}
+	if firstName.Valid {
+		res.FirstName = firstName.String
+	}
+	if lastName.Valid {
+		res.LastName = lastName.String
+	}
+	if username.Valid {
+		res.Username = username.String
+	}
+	return res, err
+}
+
+func (s Service) CreateUser(request interface{}) (interface{}, error) {
+	req := request.(User)
+	var userID string
+
+	err := s.QueryRow("INSERT INTO users (username, email, salted_password) VALUES ($1, $2, $3) RETURNING user_id", req.Email, req.Email, req.Password).Scan(&userID)
+	if err != nil {
+		return "", errors.New("Error creating user. Please try again in a few minutes")
+	}
+	return userID, nil
+}
+
+func (s Service) UpdateUser(req User) (bool, error) {
+	fmt.Printf("updating user - %+v", req)
+	var userID sql.NullString
+	row := s.QueryRow("UPDATE users SET username = $1, first_name = $2, last_name = $3 WHERE user_id = $4 RETURNING user_id", req.Username, req.FirstName, req.LastName, req.ID).Scan(&userID)
+
+	fmt.Println(row, userID)
+	if userID.String == "" {
+		return false, errors.New("No user found with the id")
+	}
+
+	return true, nil
+}
+
+// switch {
+// case err == sql.ErrNoRows:
+//         log.Printf("No user with that ID.")
+// case err != nil:
+//         log.Fatal(err)
+// default:
+//         fmt.Printf("Username is %s\n", username)
+// }

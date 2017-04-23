@@ -44,11 +44,9 @@ func Protect(h httprouter.Handle) httprouter.Handle {
 			// fmt.Println("\nuser_id", claims["user_id"], claims["user_id"].(string))
 			// key := claimsContextKey("user_id")
 			ctx := context.WithValue(r.Context(), "user_id", claims["user_id"])
-			fmt.Println("Before calling the next route")
 			r := r.WithContext(ctx)
 			h(w, r, ps)
 		} else {
-			fmt.Println(err)
 			http.NotFound(w, r)
 			return
 		}

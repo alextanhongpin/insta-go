@@ -2,6 +2,42 @@
   <title>Profile</title>
 {{end}}
 {{define "body"}}
-  <div>This is your profile {{ .Name }}</div>
+  <div>This is your email {{ .Email }}</div>
   <div>This is your id <b>{{ .UserID }}</b></div>
+
+
+  <form method="POST" action="/users/me">
+  	<h3>Update your profile</h3>
+
+  	<div>
+  		<label>Username:</label>
+  		<input type="text" name="username" value="{{.Username}}">
+  	</div>
+
+
+    <div>
+      <label>First name:</label>
+      <input type="text" name="first_name" value="{{.FirstName}}">
+    </div>
+
+      <div>
+      <label>Last name:</label>
+      <input type="text" name="last_name" value="{{.LastName}}">
+    </div>
+
+  	<button>Submit</button>
+  </form>
+
+  <form method="POST" action="/password">
+  	<div>
+  		<label>Old Password:</label>
+  		<input type="password" name="password_old" placeholder="Enter your old password">
+  	</div>
+  	<div>
+  		<label>New Password:</label>
+  		<input type="password" name="password_new" placeholder="Enter your new password">
+  	</div>
+
+  	<button>Submit</button>
+  </form>
 {{end}}
