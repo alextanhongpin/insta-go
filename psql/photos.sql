@@ -2,7 +2,10 @@ CREATE TABLE photos (
 	photo_id SERIAL PRIMARY KEY,
 	src text,
 	caption text,
-	user_id REFERENCES user,
-	date_created date NOT NULL DEFAULT CURRENT_TIMESTAMP
-	date_updated date NOT NULL DEFAULT CURRENT_TIMESTAMP
+	user_id integer REFERENCES users (user_id),
+	date_created TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+	date_updated TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 )
+
+	# date_updated date NOT NULL DEFAULT CURRENT_TIMESTAMP
+	# TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()

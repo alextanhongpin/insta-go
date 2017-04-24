@@ -1,7 +1,10 @@
 package authsvc
 
 import (
+	"regexp"
 	"time"
+
+	"github.com/ventu-io/go-shortid"
 )
 
 // User is the model for the user for this app
@@ -25,6 +28,24 @@ type LoginRequest struct {
 
 // RegisterRequest is the request required when the user register a new account
 type RegisterRequest struct {
+}
+
+type Image struct {
+	Name string
+}
+
+func (i Image) Path(path string) (string, string) {
+	id, _ := shortid.Generate()
+	reg := regexp.MustCompile(`\.(gif|jpg|jpeg|tiff|png)$`)
+
+	match := reg.FindStringSubmatch(i.Name)
+	ext := match[0]
+
+	res := reg.ReplaceAllString(i.Name, "$1W")
+	finalPath := path + res + id + ext
+
+	// Return an absolute path and relative path
+	return finalPath, "." + finalPath // unique id
 }
 
 // RegisterResponse is the response returned when the user successfully/failed to register

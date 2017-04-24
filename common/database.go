@@ -24,6 +24,7 @@ func GetDatabaseContext() *sql.DB {
 
 func InitDatabase() *sql.DB {
 	// Disable SSL for development
+	// Set parse time to true to enable time.Time  parseTime=True
 	db, err = sql.Open("postgres", "user=postgres dbname=instadb sslmode=disable")
 	if err != nil {
 		log.Fatal(err)

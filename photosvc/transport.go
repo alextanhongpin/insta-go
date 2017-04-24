@@ -7,7 +7,7 @@ import (
 	"net/url"
 
 	"github.com/alextanhongpin/instago/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
-	"github.com/justinas/alice"
+	//"github.com/justinas/alice"
 	"go.uber.org/zap"
 
 	"github.com/alextanhongpin/instago/common"
@@ -55,11 +55,13 @@ func Init(router *httprouter.Router) *httprouter.Router {
 	service := &Service{common.GetDatabaseContext()}
 
 	// Example chaining middlewares with Alice
-	router.Handler("GET", "/photos", alice.New(MiddlewareOne, MiddlewareTwo).ThenFunc(endpoint.All(service)))
+	// router.Handler("GET", "/photos", alice.New(MiddlewareOne, MiddlewareTwo).ThenFunc(endpoint.All(service)))
 
+	router.GET("/api/photos", middleware.Protect(endpoint.All(service)))
 	// Example middleware with httprouter
 	router.GET("/photos/:id", middleware.Logger(endpoint.One(service)))
-	router.POST("/photos", endpoint.Create(service))
+	router.POST("/api/photos", middleware.Protect(endpoint.Create(service)))
+	router.GET("/api/photos/count", middleware.Protect(endpoint.Count(service)))
 
 	return router
 }

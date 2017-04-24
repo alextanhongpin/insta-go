@@ -5,28 +5,37 @@
   <div>This is your email {{ .Email }}</div>
   <div>This is your id <b>{{ .UserID }}</b></div>
 
+  <div>This is your photo <img src="{{.Userphoto}}" width="160" height="auto"/></div>
 
-  <form method="POST" action="/users/me">
+
+  <!-- <form method="POST" action="/users/me"> -->
   	<h3>Update your profile</h3>
 
   	<div>
   		<label>Username:</label>
-  		<input type="text" name="username" value="{{.Username}}">
+  		<input id="username" type="text" name="username" value="{{.Username}}">
   	</div>
 
 
     <div>
       <label>First name:</label>
-      <input type="text" name="first_name" value="{{.FirstName}}">
+      <input id="firstName" type="text" name="first_name" value="{{.FirstName}}">
     </div>
 
       <div>
       <label>Last name:</label>
-      <input type="text" name="last_name" value="{{.LastName}}">
+      <input id="lastName" type="text" name="last_name" value="{{.LastName}}">
     </div>
 
-  	<button>Submit</button>
-  </form>
+  	<button id="updateUser">Submit</button>
+
+
+    <div>
+      <div>Upload a user photo</div>
+      <input type="file" name="" id="userphoto"/>
+      <button id="uploadUserphoto">Upload Photo</button>
+    </div>
+<!--   </form> -->
 
   <form method="POST" action="/password">
   	<div>
@@ -40,4 +49,17 @@
 
   	<button>Submit</button>
   </form>
+
+  <div>
+    <h3>Upload your first photo!</h3>
+
+      <input type="file" name="uploadfile" id="uploader"/>
+      <input type="text" name="caption" id="caption"/>
+      <input type="submit" value="upload" id="submit"/>
+  </div>
+
+  <div id="photoView"></div>
+  <script type="text/javascript" src="/static/js/photo.js"></script>
+  <script type="text/javascript" src="/static/js/user.js"></script>
+  
 {{end}}

@@ -5,6 +5,6 @@
 
 <h1>View Users</h1>
 	{{range .}}
-		<div>{{ .Username }} {{ .Email }}</div>
+		<div><a href="/users/{{.ID}}">{{ .Username }} {{ .Email }}</a></div>
 	{{end}}
 {{end}}

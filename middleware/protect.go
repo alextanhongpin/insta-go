@@ -13,7 +13,6 @@ import (
 // authorized to access an endpoint
 func Protect(h httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-
 		// If no Auth cookie is set then return a 404 not found
 		cookie, err := r.Cookie("Auth")
 		if err != nil {
@@ -41,8 +40,6 @@ func Protect(h httprouter.Handle) httprouter.Handle {
 
 		// Grab the token claims and pass it into the original request
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-			// fmt.Println("\nuser_id", claims["user_id"], claims["user_id"].(string))
-			// key := claimsContextKey("user_id")
 			ctx := context.WithValue(r.Context(), "user_id", claims["user_id"])
 			r := r.WithContext(ctx)
 			h(w, r, ps)

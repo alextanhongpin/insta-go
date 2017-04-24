@@ -1,61 +1,44 @@
 package authsvc
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/alextanhongpin/instago/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
-	"github.com/alextanhongpin/instago/common"
 	"github.com/alextanhongpin/instago/helper"
+	"github.com/alextanhongpin/instago/helper/httputil"
 )
 
 // Endpoint is the struct that holds all the endpoints for the auth service
-type Endpoint struct{}
-
-const CONTENT_TYPE_VND string = "application/vnd.api+json; charset=utf-8"
-
-var service *Service
-
-func init() {
-	// Initialize the service before starting the packages
-	service = &Service{common.GetDatabaseContext()}
+type Endpoint struct {
+	DB *Service
 }
 
-// Login endpoint handles the user login
 func (e Endpoint) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	r.ParseForm()
-
-	//email := r.Form["email"][0]
-	//password := r.Form["password"][0]
+	// r.ParseForm()
 	email := r.FormValue("email")
 	password := r.FormValue("password")
 
-	user, err := service.GetUserByEmail(GetUserRequest{Email: email})
-
+	user, err := e.DB.GetUserByEmail(GetUserRequest{Email: email})
 	if err != nil {
-		helper.ErrorWithJSON(w, err.Error(), 400)
+		httpUtil.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	// NO users found
+	// If the user struct is empty, it means no user is found
 	if (User{}) == user {
-		w.WriteHeader(http.StatusForbidden)
-		fmt.Fprintf(w, `{
-			"error": "Forbidden request",
-			"message": "User with the %v is not found"
-			}`, email)
+		errorMessage := fmt.Sprintf("The email %v does not exist", email)
+		httpUtil.Error(w, errorMessage, http.StatusForbidden)
 		return
 	}
 
 	// Validate if the password is correct
 	if passwordMatched := helper.CheckPasswordHash(password, user.Password); !passwordMatched {
-		w.Header().Set("Content-Type", CONTENT_TYPE_VND)
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, `{
-			"error": "Bad Request",
-			"message": "Email or password is incorrect"
-		}`)
+		httpUtil.Error(w, "Email or password is incorrect", http.StatusBadRequest)
 		return
 	}
 
@@ -77,10 +60,6 @@ func (e Endpoint) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 
 func (e Endpoint) LoginView(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	token, _ := r.Cookie("Auth")
-	// if err != nil {
-	// 	http.NotFound(w, r)
-	// 	return
-	// }
 	if token != nil {
 		http.Redirect(w, r, "/profile", http.StatusFound)
 		return
@@ -90,35 +69,19 @@ func (e Endpoint) LoginView(w http.ResponseWriter, r *http.Request, ps httproute
 
 func (e Endpoint) Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	r.ParseForm()
-	fmt.Println("\nAt /register route")
-
 	email := r.FormValue("email")
 	password := r.FormValue("password")
-	fmt.Printf("Registering user with %v and %v\n", password, email)
 
 	// Check if the user exists
-	user, err := service.GetUserByEmail(GetUserRequest{Email: email})
-	fmt.Printf("User found - %v", user)
-	// Assert that the interface is of User type
-	// user = user.(GetUserResponse)
-
+	user, err := e.DB.GetUserByEmail(GetUserRequest{Email: email})
 	if err != nil {
-		w.Header().Set("Content-Type", CONTENT_TYPE_VND)
-		w.WriteHeader(http.StatusForbidden)
-		fmt.Fprintf(w, `{
-			"error": "%v"
-		}`, err.Error())
+		httpUtil.Error(w, err.Error(), http.StatusForbidden)
 		return
 	}
 
 	if (User{}) != user {
 		if passwordMatched := helper.CheckPasswordHash(password, user.Password); !passwordMatched {
-			w.Header().Set("Content-Type", CONTENT_TYPE_VND)
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, `{
-			"error": "Bad Request",
-			"message": "Email or password is incorrect"
-		}`)
+			httpUtil.Error(w, "Email or password is incorrect", http.StatusForbidden)
 			return
 		}
 		// User found, redirect
@@ -132,20 +95,13 @@ func (e Endpoint) Register(w http.ResponseWriter, r *http.Request, ps httprouter
 		Email:    email,
 		Password: hashedPassword,
 	}
-	userID, err := service.CreateUser(newuser)
+	userID, err := e.DB.CreateUser(newuser)
 	if err != nil {
-		w.Header().Set("Content-Type", CONTENT_TYPE_VND)
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, `{
-				"error": "Bad Request",
-				"message": "%v"
-			}`, err.Error())
+		httpUtil.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	expireCookie := time.Now().Add(time.Hour * 1)
-
-	fmt.Println("UserID", userID)
 	jwtToken, _ := helper.CreateJWTToken(userID.(string))
 
 	// Place the token in the client's cookie
@@ -175,37 +131,46 @@ func (e Endpoint) Profile(w http.ResponseWriter, r *http.Request, ps httprouter.
 		fmt.Println("This user is not valid", userID, ok)
 	}
 
-	user, err := service.GetUserByID(GetUserRequest{ID: userID})
+	user, err := e.DB.GetUserByID(GetUserRequest{ID: userID})
 
 	if err != nil {
 		helper.ErrorWithJSON(w, err.Error(), 400)
 		return
 	}
 	if (User{}) == user {
-		w.WriteHeader(http.StatusForbidden)
-		fmt.Fprintf(w, `{
-			"error": "Forbidden request",
-			"message": "User with the %v is not found"
-			}`, userID)
+		httpUtil.Error(w, "User not found", http.StatusForbidden)
 		return
 	}
 
 	// fmt.Println("getting user id", userId)
 	helper.RenderTemplate(w, "profile", "base", struct {
-		Email, Username, UserID, FirstName, LastName string
-	}{user.Email, user.Username, user.ID, user.FirstName, user.LastName})
+		Email, Username, Userphoto, UserID, FirstName, LastName string
+	}{user.Email, user.Username, user.Userphoto, user.ID, user.FirstName, user.LastName})
 
 }
 
 func (e Endpoint) UserView(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
-	// id := ps.ByName("id")
+	id := ps.ByName("id")
+	fmt.Println("the id is - ", id)
 
+	user, err := e.DB.GetUserByID(GetUserRequest{ID: id})
+
+	// No user found
+	if (User{}) == user {
+		http.Redirect(w, r, "/users", http.StatusFound)
+		return
+	}
+	if err != nil {
+		// httpUtil.Error()
+		panic(err)
+	}
+	helper.RenderTemplate(w, "user", "base", user)
 }
 func (e Endpoint) UsersView(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	// id := ps.ByName("id")
-	users, err := service.GetUsers(nil)
+	users, err := e.DB.GetUsers(nil)
 	// fmt.Println("Get users - ", users)
 	if err != nil {
 		// fmt.Println(err)
@@ -225,22 +190,81 @@ func (e Endpoint) Logout(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 }
 
 func (e Endpoint) UpdateUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	w.Header().Set("Content-Type", CONTENT_TYPE_VND)
-
-	userID, _ := r.Context().Value("user_id").(string)
-
-	_, err := service.UpdateUser(User{
-		ID:        userID,
-		Username:  r.FormValue("username"),
-		FirstName: r.FormValue("first_name"),
-		LastName:  r.FormValue("last_name"),
-	})
+	var user User
+	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
-		fmt.Printf("%+v\n", err)
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, `{"error": "%v"}`, err)
+		httpUtil.Error(w, "One or more field provided is invalid", http.StatusBadRequest)
+		return
+	}
+
+	user.ID, _ = r.Context().Value("user_id").(string)
+
+	_, err = e.DB.UpdateUser(user)
+	if err != nil {
+		httpUtil.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	http.Redirect(w, r, "/profile", http.StatusFound)
+}
+
+func (e Endpoint) UploadPhoto(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	fmt.Println("At upload user photos")
+	userID, ok := r.Context().Value("user_id").(string)
+	if !ok || userID == "" {
+		fmt.Println("Error getting context - ")
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprintf(w, `{"error": "forbidden request", "message": "%v"}`, "No user id available")
+		return
+	}
+
+	if origin := r.Header.Get("Origin"); origin != "" {
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+	}
+	// Insert into the database
+	// Upload photo
+	r.ParseMultipartForm(32 << 20)
+	file, handler, err := r.FormFile("file")
+	if err != nil {
+		fmt.Println("formFile", err, file, handler)
+		return
+	}
+	defer file.Close()
+	// Check if the directory exists, if not create it
+	// path := "./static/resources/user/"
+	// if _, err := os.Stat(path); os.IsNotExist(err) {
+
+	// 	fmt.Println("Directory does not exists, creating one now")
+	// 	os.MkdirAll(path, os.ModePerm)
+	// }
+	// os.MkdirAll(path, os.ModePerm)
+
+	img := Image{handler.Filename}
+	imgPath, imgRelativePath := img.Path("/static/resources/users/")
+	fmt.Println("imgPath - ", imgPath)
+	f, err := os.OpenFile(imgRelativePath, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		fmt.Println("error opening file", err)
+		return
+	}
+	defer f.Close()
+	io.Copy(f, file)
+
+	fmt.Println("The image path is - ", imgPath)
+	fmt.Println("The user id is - ", userID)
+
+	photoID, err := e.DB.UploadPhoto(User{
+		Userphoto: imgPath,
+		ID:        userID,
+	})
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, `{"error": "bad request", "message": "%v"}`, err.Error())
+		return
+	}
+	fmt.Println("successfully create photo")
+	// w.WriteHeader(http.StatusCreated)
+	fmt.Fprintf(w, `{"photo_id": %v}`, photoID)
 }

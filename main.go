@@ -9,6 +9,7 @@ import (
 	"github.com/alextanhongpin/instago/common"
 
 	"github.com/alextanhongpin/instago/authsvc"
+	"github.com/alextanhongpin/instago/likesvc"
 	"github.com/alextanhongpin/instago/photosvc"
 )
 
@@ -24,8 +25,9 @@ func main() {
 	common.InitDatabase()
 
 	// Just return the router to make the syntax nicer
-	router = photosvc.Init(router)
 	router = authsvc.Init(router)
+	router = likesvc.Init(router)
+	router = photosvc.Init(router)
 
 	fmt.Printf("Listening to port *%s", conf.Port)
 	log.Fatal(http.ListenAndServe(conf.Port, router))

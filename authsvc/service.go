@@ -22,8 +22,6 @@ var (
 // Register checks if the user can register a new account
 func (s Service) Register(request interface{}) (User, error) {
 	var user User
-	// Expires the token and cookie in 1 hour
-	// expireToken := time.Now().Add(time.Hour * 1).Unix()
 
 	// NewWithClaims create a new token by specifying signing method
 	// and contains claims
@@ -49,15 +47,16 @@ func (s Service) Profile(request interface{}) (User, error) {
 
 func (s Service) GetUsers(request interface{}) ([]User, error) {
 	var res []User
-	rows, err := s.Query("SELECT username, email FROM users")
+	rows, err := s.Query("SELECT username, email, user_id FROM users")
 	defer rows.Close()
 
 	for rows.Next() {
 		// Handle null strings
 		var username sql.NullString
 		var email sql.NullString
+		var userID sql.NullString
 
-		err = rows.Scan(&username, &email)
+		err = rows.Scan(&username, &email, &userID)
 		if err != nil {
 			return nil, err
 		}
@@ -67,6 +66,9 @@ func (s Service) GetUsers(request interface{}) ([]User, error) {
 		}
 		if email.Valid {
 			u.Email = email.String
+		}
+		if userID.Valid {
+			u.ID = userID.String
 		}
 		res = append(res, u)
 	}
@@ -123,10 +125,11 @@ func (s Service) GetUserByID(request interface{}) (User, error) {
 	var password sql.NullString
 	var userID sql.NullString
 	var username sql.NullString
+	var userphoto sql.NullString
 	var firstName sql.NullString
 	var lastName sql.NullString
 
-	err := s.QueryRow("SELECT email, salted_password, user_id, username, first_name, last_name FROM users where user_id = $1", req.ID).Scan(&email, &password, &userID, &username, &firstName, &lastName)
+	err := s.QueryRow("SELECT email, salted_password, user_id, username, userphoto, first_name, last_name FROM users where user_id = $1", req.ID).Scan(&email, &password, &userID, &username, &userphoto, &firstName, &lastName)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -154,6 +157,9 @@ func (s Service) GetUserByID(request interface{}) (User, error) {
 	if username.Valid {
 		res.Username = username.String
 	}
+	if userphoto.Valid {
+		res.Userphoto = userphoto.String
+	}
 	return res, err
 }
 
@@ -179,6 +185,20 @@ func (s Service) UpdateUser(req User) (bool, error) {
 	}
 
 	return true, nil
+}
+func (s Service) UploadPhoto(req User) (string, error) {
+	fmt.Println("at service/upload user photo", req)
+	var userID sql.NullString
+	err := s.QueryRow("UPDATE users SET userphoto =  $1 WHERE user_id = $2 RETURNING user_id", req.Userphoto, req.ID).Scan(&userID)
+	fmt.Println(err)
+	if err != nil {
+		return "", err
+	}
+	if userID.Valid {
+		fmt.Println("userID is vlaud", userID)
+		return userID.String, nil
+	}
+	return "", nil
 }
 
 // switch {

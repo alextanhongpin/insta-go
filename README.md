@@ -56,4 +56,7 @@ INSERT INTO photo_tbl
 
 // Query the sql
 SELECT * FROM photo_tbl;
+
+// Get one user
+SELECT * FROM users where email = 'john.doe@mail.com'
 ```

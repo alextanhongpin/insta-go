@@ -19,6 +19,7 @@ func makeTemplates() map[string]*template.Template {
 	templates["register"] = template.Must(template.New("").Funcs(template.FuncMap{"hasField": hasField}).ParseFiles("templates/register.html", "templates/base.html"))
 	templates["profile"] = template.Must(template.New("").Funcs(template.FuncMap{"hasField": hasField}).ParseFiles("templates/profile.html", "templates/base.html"))
 	templates["users"] = template.Must(template.New("").Funcs(template.FuncMap{"hasField": hasField}).ParseFiles("templates/users.html", "templates/base.html"))
+	templates["user"] = template.Must(template.New("").Funcs(template.FuncMap{"hasField": hasField}).ParseFiles("templates/user.html", "templates/base.html"))
 	return templates
 }
 
