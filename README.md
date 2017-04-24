@@ -1,62 +1,33 @@
-# insta-go
-Mock API Instagram with Golang
+# Instago
 
-- [ ] Config best practices
-- [ ] Connect to database
-- [ ] Designing models
-- [ ] Chaining middlewares
-- [ ] Deploy using docker
-- [ ] JWT authentication
-- [ ] Testing each layers individually
+A modern Instagram created with Golang as the backend and Elm as the frontend.
+
+The goal of the project is to understand how productive can it be to code an app using Golang. I simply choose Instagram for no particular reason. 
+
+For the database, I'll be using Postgres. 
 
 
-```
-$ psql
+## Architecture
 
-// List down all database
-$ \l 
-// Create a new database with the name instadb;
-CREATE DATABASE instadb;
+### What is the best way to store configs? 
 
-// Connect to the database
-$ \c instadb;
+According to the 12-Factor-App, configs should be stored in the environment variables. How does it apply in Golang?
 
-// Create a new table
-CREATE TABLE photo_tbl (
-    photo_id INTEGER NOT NULL,
-    src TEXT,
-    CONSTRAINT "PRIM_KEY" PRIMARY KEY (photo_id)
+### What is the best practices to use Postgres with Golang?
 
-    FOREIGN_KEY (user_id)
-    REFERENCES user_tbl (user_id)
-)
+I'm still exploring this particular area. The current way is to just store a global sql context.
 
-// Create another table
-CREATE TABLE user_tbl (
-    user_id INTEGER NOT NULL,
-)
+There are some issues that I encountered when working datetime conversion and postgres array in Golang.
 
-// View list of tables
-$ \d
+### Designing models
 
-// View specific table
-$ \d photo_tbl
+C'mon, models should be fat. How can I make my models more useful?
 
-// Alter the table by adding columns
-ALTER TABLE photo_tbl
-ADD COLUMN alt TEXT;
+### Deployment
 
+Docker?
 
-// Clear the table
-TRUNCATE TABLE photo_tbl;
+## Current progress
 
-// Inserting data
-INSERT INTO photo_tbl
-(photo_id, src) VALUES (1, 'SOMETHING');
-
-// Query the sql
-SELECT * FROM photo_tbl;
-
-// Get one user
-SELECT * FROM users where email = 'john.doe@mail.com'
-```
+Watch me throw some css magic dust on this...
+![The start!](assets/01-the-beginning.tiff)
