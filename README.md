@@ -30,4 +30,4 @@ Docker?
 ## Current progress
 
 Watch me throw some css magic dust on this...
-![The start!](assets/01-the-beginning.jpeg)
+![The start!](assets/01-the-beginning.jpg)
