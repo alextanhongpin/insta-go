@@ -25,9 +25,37 @@ C'mon, models should be fat. How can I make my models more useful?
 
 ### Deployment
 
-Docker?
+Docker? Found a good tutorial [here](https://www.iron.io/an-easier-way-to-create-tiny-golang-docker-images/).
+Remember to call `godep save -r` before building a static binary with the name `your_binary_name`:
+
+```bash
+$ docker run --rm -it -v "$GOPATH":/gopath -v "$(pwd)":/app -e "GOPATH=/gopath" -w /app golang:1.4.2 sh -c 'CGO_ENABLED=0 go build -a --installsuffix cgo --ldflags="-s" -o your_binary_name'
+```
+
+Building the docker image is straightforward:
+```dockerfile
+FROM iron/base
+WORKDIR /app
+# copy binary into image
+COPY hello /app/
+ENTRYPOINT ["./your_binary_name"]
+```
+
+Run the dockerfile to build the image:
+
+```bash
+$ docker build -t treeder/go-hello-http .
+```
+
+Now run it:
+```bash
+$ docker run --rm -it -p 8080:8080 treeder/go-hello-http
+```
+
 
 ## Current progress
 
 Watch me throw some css magic dust on this...
 ![The start!](assets/01-the-beginning.jpg)
+
+
