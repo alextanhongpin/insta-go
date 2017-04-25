@@ -13,13 +13,13 @@ import (
 	"github.com/alextanhongpin/instago/helper/httputil"
 )
 
-// Endpoint is the struct that holds all the endpoints for the auth service
+// Endpoint struct hold the db context and route method
 type Endpoint struct {
 	DB *Service
 }
 
+// Login is a service that authenticates the user
 func (e Endpoint) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	// r.ParseForm()
 	email := r.FormValue("email")
 	password := r.FormValue("password")
 
@@ -28,47 +28,59 @@ func (e Endpoint) Login(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 		httpUtil.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
-	// If the user struct is empty, it means no user is found
-	if (User{}) == user {
+	
+	// Check if the user is registered in the db
+	noUserFound := (User{}) == user
+	if noUserFound {
 		errorMessage := fmt.Sprintf("The email %v does not exist", email)
 		httpUtil.Error(w, errorMessage, http.StatusForbidden)
 		return
 	}
 
-	// Validate if the password is correct
-	if passwordMatched := helper.CheckPasswordHash(password, user.Password); !passwordMatched {
+	// Found user, check if the password matches
+	if isMatchingPassword := helper.CheckPasswordHash(password, user.Password); !isMatchingPassword {
 		httpUtil.Error(w, "Email or password is incorrect", http.StatusBadRequest)
 		return
 	}
 
-	expireCookie := time.Now().Add(time.Hour * 1)
+	// Email and password matches, create an access token
+	jwtToken, err := helper.CreateJWTToken(user.ID)
+	if err != nil {
+		httpUtil.Error(w, "Error generating access token", http.StatusInternalServerError)
+		return
+	}
 
-	jwtToken, _ := helper.CreateJWTToken(user.ID)
-
-	// Place the token in the client's cookie
+	// Create a cookie that stores the access token
 	cookie := http.Cookie{
 		Name:     "Auth",
 		Value:    jwtToken,
-		Expires:  expireCookie,
+		Expires:  time.Now().Add(time.Hour * 1),
 		HttpOnly: true,
 	}
-
+	// Set the cookie for client 
 	http.SetCookie(w, &cookie)
+	
+	// Redirect the user to profile page after successfully logging in
 	http.Redirect(w, r, "/profile", http.StatusFound)
 }
 
+// LoginView is the page for the user to log in
 func (e Endpoint) LoginView(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	// Check the cookie to check if the user is already authenticated
 	token, _ := r.Cookie("Auth")
+	
+	// Token exists, block them from accessing the login page
 	if token != nil {
 		http.Redirect(w, r, "/profile", http.StatusFound)
 		return
 	}
+	
+	// User is not logged in, display the login page
 	helper.RenderTemplate(w, "login", "base", nil)
 }
 
+// Register is the service that allow user creation
 func (e Endpoint) Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	r.ParseForm()
 	email := r.FormValue("email")
 	password := r.FormValue("password")
 
@@ -78,53 +90,62 @@ func (e Endpoint) Register(w http.ResponseWriter, r *http.Request, ps httprouter
 		httpUtil.Error(w, err.Error(), http.StatusForbidden)
 		return
 	}
-
-	if (User{}) != user {
-		if passwordMatched := helper.CheckPasswordHash(password, user.Password); !passwordMatched {
+	
+	// Check if the user exist (interface should not be empty struct)
+	hasUser := (User{}) != user
+	if hasUser {
+		// Email exists, check if the password is correct
+		if isMatchingPassword := helper.CheckPasswordHash(password, user.Password); !isMatchingPassword {
+			// Password is incorrect
 			httpUtil.Error(w, "Email or password is incorrect", http.StatusForbidden)
 			return
 		}
-		// User found, redirect
+		
+		// Email and password is correct, redirect to profile page
 		http.Redirect(w, r, "/profile", http.StatusFound)
 		return
 	}
-	// Create a new user
-	// Hash the password first
-	hashedPassword, _ := helper.HashPassword(password)
-	newuser := User{
+	
+	hashedPassword, err := helper.HashPassword(password)
+	if err != nil {
+		httpUtil.Error(w, "Error hashing password", http.StatusInternalServerError)
+		return
+	}
+	
+	newUser := User{
 		Email:    email,
 		Password: hashedPassword,
 	}
-	userID, err := e.DB.CreateUser(newuser)
+	
+	userID, err := e.DB.CreateUser(newUser)
 	if err != nil {
 		httpUtil.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	expireCookie := time.Now().Add(time.Hour * 1)
-	jwtToken, _ := helper.CreateJWTToken(userID.(string))
+	jwtToken, err := helper.CreateJWTToken(userID.(string))
+	if err != nil {
+		httpUtil.Error(w, "Error generating access token", http.StatusInternalServerError)
+		return
+	}
 
 	// Place the token in the client's cookie
 	cookie := http.Cookie{
 		Name:     "Auth",
 		Value:    jwtToken,
-		Expires:  expireCookie,
+		Expires:  time.Now().Add(time.Hour * 1),
 		HttpOnly: true,
 	}
-
 	http.SetCookie(w, &cookie)
-	// Create Cookie
-	// w.Header().Set("Content-Type", CONTENT_TYPE_VND)
-	// fmt.Fprint(w, `{"ok":true}`)
 	http.Redirect(w, r, "/profile", http.StatusFound)
-
 }
 
+// RegisterView
 func (e Endpoint) RegisterView(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	helper.RenderTemplate(w, "register", "base", nil)
 }
 
-// Profile returns the
+// Profile
 func (e Endpoint) Profile(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	userID, ok := r.Context().Value("user_id").(string)
 	if !ok {
@@ -210,7 +231,6 @@ func (e Endpoint) UpdateUser(w http.ResponseWriter, r *http.Request, _ httproute
 
 func (e Endpoint) UploadPhoto(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-	fmt.Println("At upload user photos")
 	userID, ok := r.Context().Value("user_id").(string)
 	if !ok || userID == "" {
 		fmt.Println("Error getting context - ")
@@ -242,7 +262,7 @@ func (e Endpoint) UploadPhoto(w http.ResponseWriter, r *http.Request, _ httprout
 
 	img := Image{handler.Filename}
 	imgPath, imgRelativePath := img.Path("/static/resources/users/")
-	fmt.Println("imgPath - ", imgPath)
+
 	f, err := os.OpenFile(imgRelativePath, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		fmt.Println("error opening file", err)
@@ -250,9 +270,6 @@ func (e Endpoint) UploadPhoto(w http.ResponseWriter, r *http.Request, _ httprout
 	}
 	defer f.Close()
 	io.Copy(f, file)
-
-	fmt.Println("The image path is - ", imgPath)
-	fmt.Println("The user id is - ", userID)
 
 	photoID, err := e.DB.UploadPhoto(User{
 		Userphoto: imgPath,
@@ -264,7 +281,5 @@ func (e Endpoint) UploadPhoto(w http.ResponseWriter, r *http.Request, _ httprout
 		fmt.Fprintf(w, `{"error": "bad request", "message": "%v"}`, err.Error())
 		return
 	}
-	fmt.Println("successfully create photo")
-	// w.WriteHeader(http.StatusCreated)
 	fmt.Fprintf(w, `{"photo_id": %v}`, photoID)
 }
