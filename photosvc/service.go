@@ -125,11 +125,3 @@ func (s Service) Create(req Photo) (string, error) {
 	}
 	return "", nil
 }
-
-// SELECT p.photo_id, p.src, p.caption, p.date_created, count(l.user_id) AS like_count, p.user_id, unnest(array_agg(distinct u.username)) AS username, array_to_json(u2.username) AS users
-// FROM photos p
-// 	LEFT JOIN users u using(user_id)
-// 		LEFT JOIN likes l ON l.photo_id = p.photo_id
-// 		LEFT JOIN users u2 ON u2.user_id = l.user_id
-// WHERE p.user_id = '2'
-// GROUP BY p.photo_id

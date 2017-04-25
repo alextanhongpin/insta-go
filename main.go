@@ -14,21 +14,21 @@ import (
 )
 
 func main() {
-
-	// Setup static directory
-	// http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-
-	// Load the config
-	conf := common.GetConfig()
+	// New router
 	router := httprouter.New()
+
+	// Serve files from the static directory
 	router.ServeFiles("/static/*filepath", http.Dir("static"))
+
+	// Init database
 	common.InitDatabase()
 
-	// Just return the router to make the syntax nicer
+	// Init routes (can add feature toggle later)
 	router = authsvc.Init(router)
 	router = likesvc.Init(router)
 	router = photosvc.Init(router)
 
-	fmt.Printf("Listening to port *%s", conf.Port)
-	log.Fatal(http.ListenAndServe(conf.Port, router))
+	Port := common.Config.Port
+	fmt.Printf("Listening to port *%s", Port)
+	log.Fatal(http.ListenAndServe(Port, router))
 }

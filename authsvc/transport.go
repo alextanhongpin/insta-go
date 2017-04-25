@@ -18,10 +18,10 @@ func Init(router *httprouter.Router) *httprouter.Router {
 	router.GET("/register", endpoint.RegisterView)                             // Render the register view
 	router.POST("/register", endpoint.Register)                                // Handles user registration
 	router.GET("/profile", middleware.Protect(endpoint.Profile))               // Render the current user profile
-	router.GET("/users", endpoint.UsersView)                                   // Render the user view
+	router.GET("/users", endpoint.UsersView)                                   // Render the users view
 	router.GET("/users/:id", endpoint.UserView)                                // Render the user view
 	router.POST("/users/me", middleware.Protect(endpoint.UpdateUser))          // Update the user
-	router.POST("/users/userphotos", middleware.Protect(endpoint.UploadPhoto)) // Update the user
+	router.POST("/users/userphotos", middleware.Protect(endpoint.UploadPhoto)) // Update the user photo
 	router.POST("/logout", endpoint.Logout)                                    // Clears the cookie and logs the user out
 	return router
 }

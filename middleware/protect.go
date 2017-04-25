@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/alextanhongpin/instago/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
+	"github.com/alextanhongpin/instago/common"
 	"github.com/dgrijalva/jwt-go"
 )
 
@@ -28,7 +29,7 @@ func Protect(h httprouter.Handle) httprouter.Handle {
 			}
 			// hmacSampleSecret is a []byte containing your secret,
 			// e.g. []byte("my secret key")
-			return []byte("secret"), nil
+			return []byte(common.Config.JWTSecret), nil
 		})
 
 		if err != nil {

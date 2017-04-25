@@ -7,7 +7,7 @@ import (
 	"github.com/ventu-io/go-shortid"
 )
 
-// User is the model for the user for this app
+// User is schema for the user resources
 type User struct {
 	ID        string    `json:"id"`         // ID is a unique identifier for the user
 	CreatedAt time.Time `json:"created_at"` // CreatedAt is the date when the user join
@@ -18,16 +18,6 @@ type User struct {
 	Userphoto string    `json:"userphoto"`  // Userphoto is the photo displayed by the user
 	Email     string    `json:"email"`      // Email is created user register
 	Password  string    `json:"password"`   // Password is the hashed password that user use to register
-}
-
-// Login is the request required when the user log in the application
-type LoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-// RegisterRequest is the request required when the user register a new account
-type RegisterRequest struct {
 }
 
 type Image struct {
@@ -46,12 +36,4 @@ func (i Image) Path(path string) (string, string) {
 
 	// Return an absolute path and relative path
 	return finalPath, "." + finalPath // unique id
-}
-
-// RegisterResponse is the response returned when the user successfully/failed to register
-type RegisterResponse struct{}
-
-type GetUserRequest struct {
-	Email string
-	ID    string
 }

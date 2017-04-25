@@ -23,7 +23,7 @@ func (e Endpoint) All(svc *Service) httprouter.Handle {
 		}
 		v, err := svc.All(req)
 		if err != nil {
-			httpUtil.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
@@ -33,7 +33,7 @@ func (e Endpoint) All(svc *Service) httprouter.Handle {
 
 		js, err := json.Marshal(res)
 		if err != nil {
-			httpUtil.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		httpUtil.Json(w, js, http.StatusOK)
@@ -46,7 +46,7 @@ func (e Endpoint) One(svc *Service) httprouter.Handle {
 		}
 		v, err := svc.One(req)
 		if err != nil {
-			httpUtil.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
@@ -55,7 +55,7 @@ func (e Endpoint) One(svc *Service) httprouter.Handle {
 		}
 		js, err := json.Marshal(res)
 		if err != nil {
-			httpUtil.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		httpUtil.Json(w, js, http.StatusOK)
@@ -67,43 +67,33 @@ func (e Endpoint) Create(svc *Service) httprouter.Handle {
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		userID, ok := r.Context().Value("user_id").(string)
 		if !ok || userID == "" {
-			fmt.Println("Error getting context - ")
-			w.WriteHeader(http.StatusForbidden)
-			fmt.Fprintf(w, `{"error": "forbidden request", "message": "%v"}`, "No user id available")
+			http.Error(w, "No user with the id available", http.StatusForbidden)
 			return
 		}
 
 		if origin := r.Header.Get("Origin"); origin != "" {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 		}
-		// Insert into the database
-		// Upload photo
+
 		r.ParseMultipartForm(32 << 20)
 		file, handler, err := r.FormFile("file")
 		if err != nil {
-			fmt.Println("formFile", err, file, handler)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		defer file.Close()
-
 		caption := r.FormValue("caption")
 
-		fmt.Println("Got caption - ", caption)
-
-		fmt.Fprintf(w, "%v", handler.Header)
 		img := Image{handler.Filename}
-		imgPath := img.Path("/static/images/")
-		fmt.Println("imgPath - ", imgPath)
-		f, err := os.OpenFile(imgPath, os.O_WRONLY|os.O_CREATE, 0666)
+		imgPath, relativeImgPath := img.Path("/static/images/")
+		f, err := os.OpenFile(relativeImgPath, os.O_WRONLY|os.O_CREATE, 0666)
 		if err != nil {
-			fmt.Println("error opening file", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
 		defer f.Close()
 		io.Copy(f, file)
-
-		fmt.Println("The image path is - ", imgPath)
-		fmt.Println("The user id is - ", userID)
 
 		photoID, err := svc.Create(Photo{
 			Src:     imgPath,
@@ -112,12 +102,9 @@ func (e Endpoint) Create(svc *Service) httprouter.Handle {
 		})
 
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, `{"error": "bad request", "message": "%v"}`, err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		fmt.Println("successfully create photo")
-		// w.WriteHeader(http.StatusCreated)
 		fmt.Fprintf(w, `{"photo_id": %v}`, photoID)
 	}
 }
@@ -128,16 +115,13 @@ func (e Endpoint) Count(svc *Service) httprouter.Handle {
 		// Get user ID from context and assert the type
 		userID, ok := r.Context().Value("user_id").(string)
 		if !ok {
-			w.WriteHeader(http.StatusForbidden)
-			fmt.Fprint(w, `{"error": "You are not authorized to use this service"}`)
+			http.Error(w, "You are not authorized to use this service", http.StatusForbidden)
 			return
 		}
-		// Get the number of images that the user has uploaded
-		count, err := svc.Count(userID)
 
+		count, err := svc.Count(userID)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprint(w, `{"error": "Something happened"}`)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 

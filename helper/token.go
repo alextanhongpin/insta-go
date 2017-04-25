@@ -3,7 +3,11 @@
 
 package helper
 
-import "github.com/dgrijalva/jwt-go"
+import (
+	"github.com/dgrijalva/jwt-go"
+
+	"github.com/alextanhongpin/instago/common"
+)
 
 func CreateJWTToken(userID string) (string, error) {
 	var jwtToken string
@@ -13,7 +17,7 @@ func CreateJWTToken(userID string) (string, error) {
 	})
 	// Sign and get the complete encoded token as a string
 	//  using the secret
-	jwtToken, err = token.SignedString([]byte("secret"))
+	jwtToken, err = token.SignedString([]byte(common.Config.JWTSecret))
 	if err != nil {
 		return "", err
 	}

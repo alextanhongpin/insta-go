@@ -30,7 +30,7 @@ type Image struct {
 	Name string
 }
 
-func (i Image) Path(path string) string {
+func (i Image) Path(path string) (string, string) {
 	id, _ := shortid.Generate()
 	reg := regexp.MustCompile(`\.(gif|jpg|jpeg|tiff|png)$`)
 
@@ -38,8 +38,10 @@ func (i Image) Path(path string) string {
 	ext := match[0]
 
 	res := reg.ReplaceAllString(i.Name, "$1W")
+	finalPath := path + res + id + ext
 
-	return path + res + id + ext // unique id
+	// Return an absolute path and relative path
+	return finalPath, "." + finalPath // unique id
 }
 
 // allRequest request photos that belongs to a user

@@ -15,31 +15,22 @@ type Configuration struct {
 
 const configPath string = "conf.json"
 
-var configuration Configuration
+// Global Config variable
+var Config Configuration
 
 func init() {
-	configuration = LoadConfig()
+	Config = loadConfig()
 }
 
 // LoadConfig returns the configuration that is loaded
 // from conf.json
-func LoadConfig() Configuration {
+func loadConfig() Configuration {
+	var config Configuration
 	file, _ := os.Open(configPath)
-	err := json.NewDecoder(file).Decode(&configuration)
+	err := json.NewDecoder(file).Decode(&config)
 
 	if err != nil {
 		fmt.Printf("Error:%s", err)
 	}
-	return configuration
-}
-
-// GetConfig reads the config from a json file
-// and returns the config
-func GetConfig() Configuration {
-	// Check if the config is loaded or not
-	if (Configuration{} != configuration) {
-		return configuration
-	}
-	configuration = LoadConfig()
-	return configuration
+	return config
 }
